@@ -1,0 +1,293 @@
+import random
+import time   # time module to record execution time.
+import matplotlib.pyplot as plt
+
+
+# Global variables for comparisons
+comparisons_selection = [0, 0, 0]
+comparisons_merge = [0, 0, 0]
+comparisons_quick = [0, 0, 0]
+
+# Defining a function to generate a random array of size 'size'
+def generate_randomly(size):
+    
+    return [random.randint(100000, 999999) for _ in range(size)]
+
+
+# Defining the selection sort function
+def selection_sort(array):
+    
+    comparisons = 0
+    for i in range(len(array)):
+        
+        min_val = min(array[i:])
+        min_ind = array.index(min_val, i)
+        # swap
+        array[i], array[min_ind] = array[min_ind], array[i]
+        comparisons += len(array[i+1:])
+
+    return array, comparisons
+
+
+# Defining the merge sort function
+def merge_sort(arr):
+    
+    comparisons = 0
+    # if arr is greater than 1
+    if len(arr) > 1:
+        # defining two sub-arrays
+        left_arr = arr[:len(arr)//2]
+        right_arr = arr[len(arr)//2:]
+        
+        # recursion
+        _, comparisons_left = merge_sort(left_arr)
+        _, comparisons_right = merge_sort(right_arr)
+        comparisons += comparisons_left + comparisons_right
+        
+        # merge 
+        i = 0   # left arr index
+        j = 0   # right arr index
+        k = 0   # merged arr index
+        while i < len(left_arr) and j < len(right_arr):
+            
+            comparisons += 1
+            if left_arr[i] < right_arr[j]:
+                
+                arr[k] = left_arr[i]
+                i += 1
+                k += 1
+            
+            else:
+                arr[k] = right_arr[j]
+                j += 1
+                k += 1
+                
+        while i < len(left_arr):
+            arr[k] = left_arr[i]
+            i += 1
+            k += 1
+            
+        while j < len(right_arr):
+            arr[k] = right_arr[j]
+            j += 1
+            k += 1
+            
+    return arr, comparisons # Return the sorted array  
+    
+            
+            
+# Defining the quick sort function
+def quick_sort(array, left, right):
+    
+    comparisons = 0
+    if left < right:
+        
+        partition_pos, comparisons_partition = partition(array, left, right)
+        comparisons += comparisons_partition
+        quick_sort(array, left, partition_pos - 1)
+        quick_sort(array, partition_pos + 1, right)
+        
+    return array, comparisons
+        
+# Defining a function to return the index of the pivot
+def partition( array, left, right):
+    
+    i = left
+    j = right - 1
+    pivot = array[right]
+    
+    comparisons = 0
+    while i <= j:
+        
+        while i < right and array[i] < pivot:
+            i += 1
+            comparisons += 1
+            
+        while j >= left and array[j] >= pivot:
+            j -= 1
+            comparisons += 1
+            
+        if i <= j:
+            # swap
+            array[i], array[j] = array[j], array[i]
+            i += 1
+            j -= 1
+            
+    if array[i] > pivot:
+        # swap
+        array[i], array[right] = array[right], array[i]
+        
+    return i, comparisons
+
+
+# Defining a function to calculate the execution time and comparisons
+def measure_time_comparisons(sort_function, array, *args):
+    
+    start_time = time.time()
+    sorted_array, comparisons = sort_function(array.copy(), *args)
+    sort_time = (time.time() - start_time) * 1000  # converting to milliseconds
+    
+    return sorted_array, sort_time, comparisons
+
+
+# Defining a function to compare the execution times of the three sorting algorithms
+def create_line_chart(labels, data_dict, title):
+    
+    fig, ax = plt.subplots()
+    for algo, data in data_dict.items():
+        ax.plot(labels, data, label=algo)
+    ax.set(xlabel='Array Size', ylabel='Execution Time (ms)', title=title)
+    ax.legend()
+    ax.grid()
+    plt.show()
+
+def create_comparison_charts():
+    
+    selection_sort_labels = [100, 1000, 10000]
+    selection_sort_data = [selection_sort_time1, selection_sort_time2, selection_sort_time3]
+
+    merge_sort_labels = [100, 1000, 10000]
+    merge_sort_data = [merge_sort_time1, merge_sort_time2, merge_sort_time3]
+
+    quick_sort_labels = [100, 1000, 10000]
+    quick_sort_data = [quick_sort_time1, quick_sort_time2, quick_sort_time3]
+
+    data_dict = {
+        "Selection Sort": selection_sort_data,
+        "Merge Sort": merge_sort_data,
+        "Quick Sort": quick_sort_data,
+    }
+
+    create_line_chart(selection_sort_labels, data_dict, "Sorting Algorithms Execution Times")
+
+
+# Print the sorted arrays execution times to the terminal
+def print_sorted_arrays_times(selection_sort_times, merge_sort_times, quick_sort_times, comparisons_selection, comparisons_merge, comparisons_quick):
+    print('\n')
+    print("Selection Sort Times:")
+    print("Array 100   :", selection_sort_times[0])
+    print("Comparisons :", comparisons_selection[0])
+    print("Array 1000  :", selection_sort_times[1])
+    print("Comparisons :", comparisons_selection[1])
+    print("Array 10000 :", selection_sort_times[2])
+    print("Comparisons :", comparisons_selection[2])
+    print('\n')
+    
+    print("Merge Sort Times:")
+    print("Array 100   :", merge_sort_times[0])
+    print("Comparisons :", comparisons_merge[0])
+    print("Array 1000  :", merge_sort_times[1])
+    print("Comparisons :", comparisons_merge[1])
+    print("Array 10000 :", merge_sort_times[2])
+    print("Comparisons :", comparisons_merge[2])
+    print('\n')
+    
+    print("Quick Sort Times:")
+    print("Array 100   :", quick_sort_times[0])
+    print("Comparisons :", comparisons_quick[0])
+    print("Array 1000  :", quick_sort_times[1])
+    print("Comparisons :", comparisons_quick[1])
+    print("Array 10000 :", quick_sort_times[2])
+    print("Comparisons :", comparisons_quick[2])
+    print('\n')
+
+
+# Wrtitng the 3 arrays of each sorting methods to a file 
+def write_sorted_arrays():
+    
+    with open("Random_Arrays.txt", "w") as file:
+        
+        file.write("Original Array 100:\n")
+        file.write(" ".join(map(str, arrays[0])) + "\n\n")
+        
+        file.write("Original Array 1,000:\n")
+        file.write(" ".join(map(str, arrays[1])) + "\n\n")
+        
+        file.write("Original Array 10,000:\n")
+        file.write(" ".join(map(str, arrays[2])) + "\n\n")
+    
+    with open("Selection_Arrays.txt", "w") as file:
+        
+        file.write("Sorted Array 100:\n")
+        file.write(" ".join(map(str, selection_sorted_array1)) + "\n\n")
+        
+        file.write("Sorted Array 1,000:\n")
+        file.write(" ".join(map(str, selection_sorted_array2)) + "\n\n")
+        
+        file.write("Sorted Array 10,000:\n")
+        file.write(" ".join(map(str, selection_sorted_array3)) + "\n\n")
+        
+    with open("Merge_Arrays.txt", "w") as file:
+        
+        file.write("Sorted Array 100:\n")
+        file.write(" ".join(map(str, merge_sorted_array1)) + "\n\n")
+        
+        file.write("Sorted Array 1,000:\n")
+        file.write(" ".join(map(str, merge_sorted_array2)) + "\n\n")
+        
+        file.write("Sorted Array 10,000:\n")
+        file.write(" ".join(map(str, merge_sorted_array3)) + "\n\n")
+    
+    with open("Quick_Arrays.txt", "w") as file:
+        
+        file.write("Sorted Array 100:\n")
+        file.write(" ".join(map(str, quick_sorted_array1)) + "\n\n")
+        
+        file.write("Sorted Array 1,000:\n")
+        file.write(" ".join(map(str, quick_sorted_array2)) + "\n\n")
+        
+        file.write("Sorted Array 10,000:\n")
+        file.write(" ".join(map(str, quick_sorted_array3)) + "\n\n")
+        
+        
+
+# Creating a list called array_sizes 
+array_sizes = [100, 1000, 10000]
+
+# Creating a list called arrays to contain the 3 random arrays each corresponding to the sizes specified in array_sizes
+arrays = [generate_randomly(size) for size in array_sizes]
+
+
+# SELECTION Sorting each array separately
+selection_sorted_array1, selection_sort_time1, comparisons_selection[0] = measure_time_comparisons(selection_sort, arrays[0].copy()) # Ensuring sorting copies of the original array
+selection_sorted_array2, selection_sort_time2, comparisons_selection[1] = measure_time_comparisons(selection_sort, arrays[1].copy())
+selection_sorted_array3, selection_sort_time3, comparisons_selection[2] = measure_time_comparisons(selection_sort, arrays[2].copy())
+
+# MERGE Sorting each array separately
+merge_sorted_array1, merge_sort_time1, comparisons_merge[0] = measure_time_comparisons(merge_sort, arrays[0].copy()) # Ensuring sorting copies of the original array
+merge_sorted_array2, merge_sort_time2, comparisons_merge[1] = measure_time_comparisons(merge_sort, arrays[1].copy())
+merge_sorted_array3, merge_sort_time3, comparisons_merge[2] = measure_time_comparisons(merge_sort, arrays[2].copy())
+
+# QUICK Sorting each array separately
+quick_sorted_array1 = arrays[0].copy() # Ensuring sorting copies of the original array
+start_time = time.time()
+quick_sorted_array1, quick_sort_time1, comparisons_quick[0] = measure_time_comparisons(quick_sort, arrays[0].copy(), 0, len(arrays[0]) - 1)
+quick_sort_time1 = (time.time() - start_time) * 1000  # converting to milliseconds
+
+quick_sorted_array2 = arrays[1].copy()
+start_time = time.time()  
+quick_sorted_array2, quick_sort_time2, comparisons_quick[1] = measure_time_comparisons(quick_sort, arrays[1].copy(), 0, len(arrays[1]) - 1)
+quick_sort_time2 = (time.time() - start_time) * 1000  # converting to milliseconds
+
+quick_sorted_array3 = arrays[2].copy()
+start_time = time.time()  
+quick_sorted_array3, quick_sort_time3, comparisons_quick[2] = measure_time_comparisons(quick_sort, arrays[2].copy(), 0, len(arrays[2]) - 1)
+quick_sort_time3 = (time.time() - start_time) * 1000  # converting to milliseconds
+
+
+# Call the function to write the sorted to file
+write_sorted_arrays()
+
+# Call the function to print the sorted arrays, execution times, and comparisons
+print_sorted_arrays_times(
+    [selection_sort_time1, selection_sort_time2, selection_sort_time3],
+    [merge_sort_time1, merge_sort_time2, merge_sort_time3],
+    [quick_sort_time1, quick_sort_time2, quick_sort_time3],
+    comparisons_selection,
+    comparisons_merge,
+    comparisons_quick
+)
+
+# Call the function to create the line graph
+create_comparison_charts()
+
